@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>لوحة تحكم أثر</title>
+<link rel="icon" href="assets/athar-logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=El+Messiri:wght@600;700&family=Cairo:wght@400;600;700&display=swap">
+<style>
+  :root{
+    --oud:#200F09; --oud-2:#2B1710; --oud-3:#3A2117; --gold:#E1A10B; --gold-soft:#F0C45A;
+    --cream:#F3E7D3; --dim:#C2AC90; --line:rgba(225,161,11,.22);
+    --new:#F0C45A; --confirmed:#8EC5FF; --shipped:#C9A7FF; --delivered:#9ED3A8; --cancelled:#F2998B;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--oud); color:var(--cream); font-family:'Cairo',Tahoma,sans-serif; font-size:14.5px; line-height:1.7; padding-inline:clamp(12px,3vw,32px); padding-block:0 40px}
+  h1,h2,h3{margin:0; font-family:'El Messiri',sans-serif}
+  button,input,select,textarea{font-family:inherit; font-size:14px; color:inherit}
+  :focus-visible{outline:2px solid var(--gold-soft); outline-offset:2px}
+  .wrap{max-width:1180px; margin-inline:auto}
+  .btn{border:none; background:var(--gold); color:var(--oud); font-weight:700; padding:9px 18px; border-radius:3px; cursor:pointer}
+  .btn:hover{background:var(--gold-soft)}
+  .btn:disabled{opacity:.5; cursor:wait}
+  .ghost{background:none; border:1px solid var(--line); color:var(--cream); padding:8px 14px; border-radius:3px; cursor:pointer}
+  .ghost:hover{border-color:var(--gold)}
+  .danger{border-color:rgba(242,153,139,.5); color:var(--cancelled)}
+  input,select,textarea{background:var(--oud); border:1px solid var(--line); border-radius:3px; padding:9px 11px; width:100%}
+  textarea{min-height:70px; resize:vertical}
+  label{display:flex; flex-direction:column; gap:4px; font-size:12.5px; color:var(--dim)}
+  .muted{color:var(--dim)}
+  [hidden]{display:none!important}
+
+  /* login */
+  .login{max-width:380px; margin:12vh auto 0; background:var(--oud-2); border:1px solid var(--line); border-radius:4px; padding:34px 28px; display:flex; flex-direction:column; gap:14px; text-align:center}
+  .login .ar{font-family:'Aref Ruqaa',serif; font-size:54px; color:var(--gold); line-height:1.2}
+  .login form{display:flex; flex-direction:column; gap:12px; text-align:right}
+  .msg{font-size:13px; min-height:20px; color:var(--cancelled)}
+
+  /* shell */
+  .top{position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:rgba(32,15,9,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); margin-inline:calc(-1 * clamp(12px,3vw,32px)); padding:10px clamp(12px,3vw,32px)}
+  .top .wrap{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+  .brand{font-family:'Aref Ruqaa',serif; font-size:28px; color:var(--gold); line-height:1}
+  .brand small{font-family:'Cairo',sans-serif; font-size:12px; color:var(--dim); margin-inline-start:6px}
+  .tabs{display:flex; gap:4px; margin-inline-start:auto; flex-wrap:wrap}
+  .tab{background:none; border:none; padding:8px 14px; border-radius:3px; cursor:pointer; color:var(--dim); font-weight:600}
+  .tab[aria-selected="true"]{background:var(--oud-3); color:var(--gold-soft)}
+  .tab .n{background:var(--gold); color:var(--oud); border-radius:10px; font-size:11px; padding:0 7px; margin-inline-start:4px}
+  main{padding-top:24px}
+  .bar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px}
+
+  /* stats */
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
+  @media (max-width:760px){ .stats{grid-template-columns:repeat(2,1fr)} }
+  .stat{background:var(--oud-2); border:1px solid var(--line); border-radius:4px; padding:14px 16px}
+  .stat span{font-size:12.5px; color:var(--dim)}
+  .stat b{display:block; font-family:'El Messiri',sans-serif; font-size:24px; color:var(--gold-soft); font-variant-numeric:tabular-nums}
+
+  .chips{display:flex; gap:6px; flex-wrap:wrap}
+  .chip{background:none; border:1px solid var(--line); color:var(--dim); padding:5px 13px; border-radius:20px; cursor:pointer; font-size:13px}
+  .chip[aria-pressed="true"]{background:var(--gold); border-color:var(--gold); color:var(--oud); font-weight:700}
+
+  /* orders */
+  .orders{display:grid; gap:10px}
+  .order{background:var(--oud-2); border:1px solid var(--line); border-inline-start:4px solid var(--st,var(--line)); border-radius:4px; padding:14px 16px; display:grid; grid-template-columns:1.2fr 1.4fr auto; gap:14px; align-items:start}
+  @media (max-width:860px){ .order{grid-template-columns:1fr} }
+  .order h3{font-size:16px; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .pill{font-family:'Cairo',sans-serif; font-size:11.5px; font-weight:700; padding:1px 9px; border-radius:10px; background:var(--st); color:var(--oud)}
+  .order ul{margin:0; padding-inline-start:18px; font-size:13.5px}
+  .order .tot{font-family:'El Messiri',sans-serif; color:var(--gold-soft); font-size:17px; font-variant-numeric:tabular-nums}
+  .order .acts{display:flex; flex-direction:column; gap:6px; min-width:170px}
+  .order a{color:var(--gold-soft)}
+  .empty{color:var(--dim); text-align:center; padding:40px 0; border:1px dashed var(--line); border-radius:4px}
+
+  /* products */
+  .plist{display:grid; gap:8px}
+  .prow{display:grid; grid-template-columns:64px 1fr auto auto; gap:14px; align-items:center; background:var(--oud-2); border:1px solid var(--line); border-radius:4px; padding:10px 14px}
+  @media (max-width:700px){ .prow{grid-template-columns:56px 1fr; } .prow .acts{grid-column:1 / -1} }
+  .thumb{width:64px; height:64px; border-radius:3px; background:var(--oud-3); display:grid; place-items:center; overflow:hidden; font-family:'Aref Ruqaa',serif; color:var(--gold)}
+  .thumb img{width:100%; height:100%; object-fit:cover}
+  .prow h3{font-size:16px}
+  .tags{display:flex; gap:6px; flex-wrap:wrap; font-size:12px}
+  .tag{border:1px solid var(--line); border-radius:10px; padding:0 8px; color:var(--dim)}
+  .tag.off{border-color:rgba(242,153,139,.5); color:var(--cancelled)}
+  .prow .acts{display:flex; gap:6px; flex-wrap:wrap}
+  .switch{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--dim); flex-direction:row; cursor:pointer}
+  .switch input{width:auto}
+
+  /* modal */
+  .scrim{position:fixed; inset:0; background:rgba(8,3,1,.7); z-index:50; display:grid; place-items:start center; overflow-y:auto; padding:30px 12px}
+  .modal{background:var(--oud-2); border:1px solid var(--line); border-radius:5px; width:min(680px,100%); padding:22px; display:flex; flex-direction:column; gap:14px}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
+  @media (max-width:600px){ .grid2,.grid3{grid-template-columns:1fr} }
+  .sizes{display:grid; gap:6px}
+  .srow{display:grid; grid-template-columns:1fr 120px 36px; gap:6px}
+  .imgbox{display:flex; gap:12px; align-items:center}
+  .imgbox .thumb{width:84px; height:84px}
+  .mfoot{display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; padding-top:10px; border-top:1px solid var(--line)}
+
+  /* settings */
+  .card{background:var(--oud-2); border:1px solid var(--line); border-radius:4px; padding:20px; display:flex; flex-direction:column; gap:12px; margin-bottom:16px}
+  .fees{display:grid; gap:6px}
+  .frow{display:grid; grid-template-columns:1fr 120px 36px; gap:6px}
+
+  .toast{position:fixed; bottom:calc(20px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%); background:var(--gold); color:var(--oud); font-weight:700; padding:9px 18px; border-radius:3px; z-index:60}
+  .confirm{position:fixed; inset:0; z-index:70; background:rgba(8,3,1,.7); display:grid; place-items:center; padding:16px}
+  .confirm div{background:var(--oud-2); border:1px solid var(--line); border-radius:5px; padding:22px; max-width:360px; display:flex; flex-direction:column; gap:14px}
+</style>
+</head>
+<body>
+
+<div id="noConfig" class="login" hidden>
+  <div class="ar">أثر</div>
+  <p>لوحة التحكم مش مربوطة بقاعدة البيانات بعد. افتح ملف <b>config.js</b> وحط فيه رابط ومفتاح Supabase، زي ما هو مشروح في ملف README.md.</p>
+</div>
+
+<div id="loginView" class="login" hidden>
+  <div class="ar">أثر</div>
+  <h2>لوحة التحكم</h2>
+  <form id="loginForm">
+    <label>الإيميل<input id="email" type="email" autocomplete="username" required></label>
+    <label>كلمة السر<input id="password" type="password" autocomplete="current-password" required></label>
+    <button class="btn" id="loginBtn" type="submit">دخول</button>
+    <div class="msg" id="loginMsg"></div>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <div class="top"><div class="wrap">
+    <span class="brand">أثر<small>لوحة التحكم</small></span>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="orders" aria-selected="true">الطلبات<span class="n" id="newCount" hidden></span></button>
+      <button class="tab" role="tab" data-tab="products" aria-selected="false">العطور</button>
+      <button class="tab" role="tab" data-tab="settings" aria-selected="false">الإعدادات</button>
+    </nav>
+    <a class="ghost" href="index.html" target="_blank" rel="noopener" style="text-decoration:none">عرض المتجر</a>
+    <button class="ghost" id="logout" type="button">خروج</button>
+  </div></div>
+
+  <main class="wrap">
+    <!-- الطلبات -->
+    <section id="tab-orders">
+      <div class="stats">
+        <div class="stat"><span>طلبات جديدة</span><b id="sNew">0</b></div>
+        <div class="stat"><span>طلبات اليوم</span><b id="sToday">0</b></div>
+        <div class="stat"><span>مبيعات هذا الشهر</span><b id="sMonth">0</b></div>
+        <div class="stat"><span>كل الطلبات المسلّمة</span><b id="sDelivered">0</b></div>
+      </div>
+      <div class="bar">
+        <div class="chips" id="statusFilter"></div>
+        <div style="display:flex; gap:8px">
+          <input id="orderSearch" placeholder="بحث بالاسم أو الرقم أو رقم الطلب" style="width:240px">
+          <button class="ghost" id="refresh" type="button">تحديث</button>
+        </div>
+      </div>
+      <div class="orders" id="orders"></div>
+    </section>
+
+    <!-- العطور -->
+    <section id="tab-products" hidden>
+      <div class="bar">
+        <h2>العطور <span class="muted" id="pCount" style="font-size:14px"></span></h2>
+        <button class="btn" id="newProduct" type="button">+ إضافة عطر</button>
+      </div>
+      <div class="plist" id="plist"></div>
+    </section>
+
+    <!-- الإعدادات -->
+    <section id="tab-settings" hidden>
+      <form id="settingsForm">
+        <div class="card">
+          <h2>بيانات المتجر</h2>
+          <div class="grid2">
+            <label>رقم واتساب الطلبات (بصيغة 2189XXXXXXXX)<input id="stWhats" inputmode="tel" dir="ltr"></label>
+            <label>حساب إنستغرام<input id="stInsta" dir="ltr"></label>
+          </div>
+          <label>الشريط الذهبي أعلى الموقع (اتركه فاضي لإخفائه)<input id="stAnn"></label>
+          <label>عنوان الواجهة الكبير<input id="stHeroT"></label>
+          <label>النص تحت العنوان<textarea id="stHeroX"></textarea></label>
+        </div>
+        <div class="card">
+          <h2>أسعار التوصيل (د.ل)</h2>
+          <div class="fees" id="fees"></div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:end">
+            <button class="ghost" type="button" id="addCity">+ مدينة</button>
+            <label style="width:200px">باقي المدن (مدينة أخرى)<input id="feeDefault" type="number" min="0" step="1"></label>
+          </div>
+        </div>
+        <button class="btn" type="submit" id="saveSettings">حفظ الإعدادات</button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<!-- نموذج العطر -->
+<div class="scrim" id="pModal" hidden>
+  <form class="modal" id="pForm">
+    <h2 id="pTitle">إضافة عطر</h2>
+    <div class="grid2">
+      <label>الاسم بالعربي *<input id="fNameAr" required></label>
+      <label>الاسم بالإنجليزي<input id="fNameEn" dir="ltr"></label>
+    </div>
+    <div class="grid3">
+      <label>القسم
+        <select id="fCat"><option value="men">رجالي</option><option value="women">نسائي</option><option value="unisex">للجنسين</option><option value="oud">عود وبخور</option></select>
+      </label>
+      <label>شارة (اختياري)<input id="fBadge" placeholder="الأكثر طلباً / جديد"></label>
+      <label>الترتيب<input id="fSort" type="number" step="1"></label>
+    </div>
+    <div class="grid3">
+      <label>الافتتاحية<input id="fTop" placeholder="زعفران، هيل"></label>
+      <label>القلب<input id="fHeart" placeholder="ورد طائفي"></label>
+      <label>القاعدة<input id="fBase" placeholder="عود، عنبر"></label>
+    </div>
+    <label>وصف قصير (اختياري)<textarea id="fDesc"></textarea></label>
+    <div>
+      <label style="margin-bottom:6px">الأحجام والأسعار (د.ل)</label>
+      <div class="sizes" id="fSizes"></div>
+      <button class="ghost" type="button" id="addSize" style="margin-top:6px">+ حجم</button>
+    </div>
+    <div class="imgbox">
+      <div class="thumb" id="fThumb">أثر</div>
+      <div style="display:flex; flex-direction:column; gap:6px; flex:1">
+        <label>صورة العطر<input id="fImage" type="file" accept="image/*"></label>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+          <button class="ghost danger" type="button" id="removeImg" hidden>إزالة الصورة</button>
+          <label class="switch">لون الزجاجة لو ما فيه صورة <input id="fColor" type="color" value="#8a5a2b"></label>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; gap:18px; flex-wrap:wrap">
+      <label class="switch"><input id="fStock" type="checkbox" checked> متوفر</label>
+      <label class="switch"><input id="fActive" type="checkbox" checked> ظاهر في المتجر</label>
+    </div>
+    <div class="msg" id="pMsg"></div>
+    <div class="mfoot">
+      <button class="ghost danger" type="button" id="deleteProduct" hidden>حذف العطر</button>
+      <div style="display:flex; gap:8px; margin-inline-start:auto">
+        <button class="ghost" type="button" id="cancelP">إلغاء</button>
+        <button class="btn" type="submit" id="saveP">حفظ</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="confirm" id="confirm" hidden><div><p id="confirmText"></p><div style="display:flex; gap:8px; justify-content:flex-end"><button class="ghost" id="confirmNo" type="button">تراجع</button><button class="btn" id="confirmYes" type="button">نعم</button></div></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>
