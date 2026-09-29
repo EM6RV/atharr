@@ -223,6 +223,12 @@
   @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important} html{scroll-behavior:auto} }
   .announce{margin-inline:calc(-1 * clamp(16px,4vw,48px)); background:var(--gold); color:var(--oud); text-align:center; font-size:13px; font-weight:700; padding:6px 16px}
   .card .visual img{height:100%; width:100%; object-fit:cover}
+  /* صور المنتجات بخلفية فاتحة: تظهر على لوح كريمي والأبيض يذوب فيه */
+  .card .visual.has-img{background:linear-gradient(180deg,#f6efe4,#eadfcd)!important}
+  .card .visual.has-img img{position:absolute; inset:4%; height:92%; width:92%; object-fit:contain; mix-blend-mode:multiply; transition:transform .4s}
+  .card:hover .visual.has-img img{transform:scale(1.04)}
+  .card .visual.has-img .badge{background:var(--oud); color:var(--gold-soft)}
+  .visual .fb:not([hidden]){display:contents}
   .card.out{opacity:.6}
   .fee{display:flex; justify-content:space-between; font-size:13.5px; color:var(--dim)}
   .loading{color:var(--dim); padding-block:30px}
