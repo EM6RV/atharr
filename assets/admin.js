@@ -152,7 +152,7 @@
       return '<div class="prow"><div class="thumb">' + (p.image_url ? '<img src="' + esc(p.image_url) + '" alt="">' : 'أثر') + '</div>' +
         '<div><h3>' + esc(p.name_ar) + ' <span class="muted" style="font-family:Cairo;font-size:13px">' + esc(p.name_en || '') + '</span></h3>' +
           '<div class="tags"><span class="tag">' + (CAT[p.category] || p.category) + '</span>' +
-          (p.sizes || []).map(function (s) { return '<span class="tag">' + esc(s.label) + ': ' + fmt(s.price) + '</span>'; }).join('') +
+          (p.sizes || []).map(function (s) { return '<span class="tag">' + esc(s.label) + ': ' + fmt(s.price) + (s.old > s.price ? ' <s style="opacity:.6">' + fmt(s.old) + '</s>' : '') + '</span>'; }).join('') +
           (p.active ? '' : '<span class="tag off">مخفي</span>') + '</div></div>' +
         '<label class="switch"><input type="checkbox" data-stock="' + p.id + '"' + (p.in_stock ? ' checked' : '') + '> متوفر</label>' +
         '<div class="acts"><button class="ghost" type="button" data-edit="' + p.id + '">تعديل</button></div></div>';
@@ -172,6 +172,7 @@
   function sizeRow(s) {
     return '<div class="srow"><input placeholder="الحجم (مثلاً 50 مل)" value="' + esc(s ? s.label : '') + '" data-sl>' +
       '<input type="number" min="0" step="0.5" placeholder="السعر" value="' + (s ? s.price : '') + '" data-sp>' +
+      '<input type="number" min="0" step="0.5" placeholder="قبل التخفيض" title="اختياري: السعر القديم قبل التخفيض" value="' + (s && s.old ? s.old : '') + '" data-so>' +
       '<button class="ghost danger" type="button" data-rm aria-label="حذف الحجم">×</button></div>';
   }
   $('#addSize').addEventListener('click', function () { $('#fSizes').insertAdjacentHTML('beforeend', sizeRow(null)); });
@@ -219,7 +220,7 @@
 
   $('#pForm').addEventListener('submit', async function (e) {
     e.preventDefault();
-    var sizes = $$('#fSizes .srow').map(function (r) { return {label: r.querySelector('[data-sl]').value.trim(), price: Number(r.querySelector('[data-sp]').value)}; })
+    var sizes = $$('#fSizes .srow').map(function (r) { var o = {label: r.querySelector('[data-sl]').value.trim(), price: Number(r.querySelector('[data-sp]').value)}; var old = Number((r.querySelector('[data-so]') || {}).value); if (old > o.price) o.old = old; return o; })
       .filter(function (s) { return s.label; });
     if (!$('#fNameAr').value.trim()) { $('#pMsg').textContent = 'اكتب اسم العطر.'; return; }
     if (!sizes.length || sizes.some(function (s) { return !(s.price > 0); })) { $('#pMsg').textContent = 'حط حجم واحد على الأقل، وكل حجم لازم له سعر.'; return; }

@@ -26,6 +26,14 @@
   var fmt = function (n) { return (Math.round(Number(n) * 100) / 100) + ' د.ل'; };
   var byId = function (id) { return P.find(function (p) { return String(p.id) === String(id); }); };
   var sizeOf = function (p, label) { return (p.sizes || []).find(function (s) { return s.label === label; }); };
+  // التخفيض: كل حجم ممكن يكون فيه old = السعر قبل التخفيض
+  var onSale = function (z) { return z && Number(z.old) > Number(z.price); };
+  var priceHTML = function (z) { return z ? (onSale(z) ? '<del class="was">' + fmt(z.old) + '</del>' : '') + fmt(z.price) : ''; };
+  var badgeOf = function (p) {
+    if (p.badge) return '<span class="badge">' + esc(p.badge) + '</span>';
+    var z = (p.sizes || []).filter(onSale)[0];
+    return z ? '<span class="badge sale">تخفيض ' + Math.round((1 - z.price / z.old) * 100) + '%</span>' : '';
+  };
   var minPrice = function (p) { return Math.min.apply(null, (p.sizes && p.sizes.length ? p.sizes : [{price: 0}]).map(function (z) { return Number(z.price) || 0; })); };
   var hexA = function (hex, a) {
     var h = String(hex || '#8a5a2b').replace('#', ''); if (h.length === 3) h = h.replace(/./g, '$&$&');
@@ -122,7 +130,7 @@
     return '<article class="card reveal' + (out ? ' out' : '') + '">' +
       '<button type="button" class="stage" data-open="' + p.id + '" aria-label="تفاصيل ' + esc(p.name_ar) + '" style="--tint:' + hexA(p.color, .38) + '">' +
         '<span class="glow"></span><span class="ring"></span><span class="shadow"></span>' +
-        (out ? '<span class="badge soldout">نفد مؤقتاً</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) +
+        (out ? '<span class="badge soldout">نفد مؤقتاً</span>' : badgeOf(p)) +
         visual(p, true) +
         '<span class="peek" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>' +
       '</button>' +
@@ -132,7 +140,7 @@
         '<div class="accords">' + esc(accords(p)) + '</div>' +
         '<div class="row"><div class="sizes">' + (p.sizes || []).map(function (z) {
           return '<button type="button" class="size" data-id="' + p.id + '" data-size="' + esc(z.label) + '" aria-pressed="' + (z.label === s.label) + '">' + esc(z.label) + '</button>';
-        }).join('') + '</div><span class="price">' + fmt(s.price) + '</span></div>' +
+        }).join('') + '</div><span class="price">' + priceHTML(s) + '</span></div>' +
         '<button type="button" class="btn add" data-add="' + p.id + '"' + (out ? ' disabled' : '') + '>' + (out ? 'غير متوفر حالياً' : 'أضف للسلة') + '</button>' +
       '</div></article>';
   }
@@ -197,7 +205,7 @@
     var p = byId(id); if (!p) return;
     var s = sizeOf(p, sizeSel[id]);
     document.querySelectorAll('.size[data-id="' + id + '"]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.size === sizeSel[id]); });
-    document.querySelectorAll('[data-add="' + id + '"]').forEach(function (b) { var pr = b.closest('.body, .info'); if (pr) { var el = pr.querySelector('.price'); if (el && s) el.textContent = fmt(s.price); } });
+    document.querySelectorAll('[data-add="' + id + '"]').forEach(function (b) { var pr = b.closest('.body, .info'); if (pr) { var el = pr.querySelector('.price'); if (el && s) el.innerHTML = priceHTML(s); } });
   }
 
   // ---------- ظهور تدريجي ----------
@@ -218,7 +226,7 @@
     $('#qvBox').innerHTML =
       '<button class="x" type="button" data-close aria-label="إغلاق">×</button>' +
       '<div class="stage" style="--tint:' + hexA(p.color, .42) + '"><span class="glow"></span><span class="ring"></span><span class="shadow"></span>' +
-        (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '') + visual(p, false) + '</div>' +
+        badgeOf(p) + visual(p, false) + '</div>' +
       '<div class="info">' +
         (p.name_en ? '<span class="en">' + esc(p.name_en) + '</span>' : '') +
         '<h3 id="qvName">' + esc(p.name_ar) + '</h3>' +
@@ -227,7 +235,7 @@
         (pyr.length ? '<dl class="pyramid">' + pyr.map(function (x) { return '<div><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
         '<div class="row"><div class="sizes">' + (p.sizes || []).map(function (z) {
           return '<button type="button" class="size" data-id="' + p.id + '" data-size="' + esc(z.label) + '" aria-pressed="' + (z.label === s.label) + '">' + esc(z.label) + '</button>';
-        }).join('') + '</div><span class="price">' + fmt(s.price) + '</span></div>' +
+        }).join('') + '</div><span class="price">' + priceHTML(s) + '</span></div>' +
         '<button type="button" class="btn add" data-add="' + p.id + '"' + (out ? ' disabled' : '') + '>' + (out ? 'غير متوفر حالياً' : 'أضف للسلة') + '</button>' +
         '<a class="btn btn-line" style="margin-top:4px" target="_blank" rel="noopener" href="' + esc(waLink('السلام عليكم، أبي أسأل عن عطر ' + p.name_ar)) + '">اسأل عنه في واتساب</a>' +
       '</div>';
