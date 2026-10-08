@@ -208,10 +208,15 @@
     return new Promise(function (res) {
       var img = new Image();
       img.onload = function () {
-        var max = 1200, w = img.width, h = img.height, k = Math.min(1, max / Math.max(w, h));
+        // 900px تكفي لبطاقة العطر وصفحته، والصورة تطلع حوالي ربع حجمها القديم
+        var max = 900, w = img.width, h = img.height, k = Math.min(1, max / Math.max(w, h));
         var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        c.toBlob(function (b) { res(b || file); }, 'image/webp', 0.85);
+        c.toBlob(function (b) {
+          if (b && b.type === 'image/webp') return res(b);
+          // متصفح ما يدعمش webp (آيفون قديم): نخليها PNG عشان الخلفية الشفافة ما تضيعش
+          c.toBlob(function (p) { res(p || file); }, 'image/png');
+        }, 'image/webp', 0.82);
       };
       img.onerror = function () { res(file); };
       img.src = URL.createObjectURL(file);
@@ -233,8 +238,10 @@
       if (removeImage) image_url = null;
       if (newImage) {
         var blob = await shrink(newImage);
-        var path = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.webp';
-        var up = await db.storage.from('products').upload(path, blob, {contentType: 'image/webp', upsert: false});
+        var type = blob.type === 'image/png' ? 'image/png' : 'image/webp';
+        var path = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + (type === 'image/png' ? '.png' : '.webp');
+        // اسم الملف ما يتغيرش أبداً، فالمتصفح يحفظ الصورة سنة كاملة بدل ساعة (أقل استهلاك من Supabase)
+        var up = await db.storage.from('products').upload(path, blob, {contentType: type, cacheControl: '31536000', upsert: false});
         if (up.error) throw up.error;
         image_url = db.storage.from('products').getPublicUrl(path).data.publicUrl;
       }
